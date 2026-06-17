@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "weather-stats"
+version = "0.1.0"
+description = "Query historical hourly weather data from RMI Belgium"
+requires-python = ">=3.7"
+dependencies = [
+    "requests",
+    "numpy",
+    "geopy",
+]
+
+[project.scripts]
+weather-stats = "weather_stats:main"
