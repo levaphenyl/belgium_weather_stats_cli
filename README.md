@@ -1,6 +1,6 @@
 # Weather Stats
 
-Query historical weather data from the Royal Meteorological Institute (RMI) of Belgium and calculate statistics (median, interquartile range, and probability of occurrence) for a specific day of the year over the last 10 years.
+Query historical weather data from the Royal Meteorological Institute (RMI) of Belgium and calculate statistics (median, interquartile range, and probability of rainfall/sunshine) for a specific day of the year over the last 10 years.
 
 ## Contribution
 
@@ -48,3 +48,5 @@ Dry Shelter Max Temperature (°C)  |       23.6 |        5.2 |       100%
 Precipitation Quantity (mm)       |        0.0 |        1.6 |        36%
 Sunshine Duration (min)           |      600.6 |      425.2 |       100%
 ```
+
+In this example, rainfall probability at any time on June 15th is 36%.
