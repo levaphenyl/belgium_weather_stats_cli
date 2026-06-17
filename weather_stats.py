@@ -161,11 +161,12 @@ def main():
     args = parser.parse_args()
     # Parse month and day from input date
     try:
-        if len(args.date.split('-')) == 3:
+        date_split = args.date.split('-')
+        if len(date_split) == 3:
             dt = datetime.strptime(args.date, "%Y-%m-%d")
+            month, day = dt.month, dt.day
         else:
-            dt = datetime.strptime(args.date, "%m-%d")
-        month, day = dt.month, dt.day
+            month, day = [float(x) for x in date_split]
     except ValueError:
         logger.error("Invalid date format. Please use YYYY-MM-DD or MM-DD.")
         sys.exit(1)
