@@ -125,9 +125,10 @@ def fetch_weather_data(station_code: int, month: int, day: int) -> Dict[str, Any
     return {"type": "FeatureCollection", "features": all_features}
 
 
-def calculate_stats(data: Dict[str, Any], field_name: str) -> Tuple[Optional[float], Optional[float]]:
+def calculate_stats(data: Dict[str, Any], field_name: str) -> Tuple[Optional[float], Optional[float], Optional[float]]:
     """
-    Calculate the median and interquartile range (IQR) for a specific field in the weather data.
+    Calculate the median and interquartile range (IQR) and probability of being
+    strictly positive for a specific field in the weather data.
 
     Parameters
     ----------
@@ -142,17 +143,19 @@ def calculate_stats(data: Dict[str, Any], field_name: str) -> Tuple[Optional[flo
         The median value of the field, or None if no data points exist.
     iqr : float, optional
         The interquartile range of the field, or None if no data points exist.
+    pos_prob : float, optional
+        The probability of the field to be strictly positive, or None if no data points.
     """
     values = [f["properties"][field_name] for f in data["features"] if f["properties"][field_name] is not None]
     if not values:
-        return None, None
+        return None, None, None
 
     median = np.median(values)
     q1 = np.percentile(values, 25)
     q3 = np.percentile(values, 75)
     iqr = q3 - q1
-
-    return float(median), float(iqr)
+    pos_prob = len([x for x in values if x > 0.]) / len(values)
+    return float(median), float(iqr), pos_prob
 
 def main():
     parser = argparse.ArgumentParser(description="Query historical hourly weather data from RMI Belgium.")
@@ -205,16 +208,16 @@ def main():
     }
 
     print(f"\nStats for {month:02d}-{day:02d} (all years) at station {station['name']}:")
-    print("-" * 60)
-    print(f"{'Parameter':<33} | {'Median':<10} | {'IQR':<10}")
-    print("-" * 60)
+    print("-" * 75)
+    print(f"{'Parameter':<33} | {'Median':<10} | {'IQR':<10} | {'P(x > 0)':<10}")
+    print("-" * 75)
 
     for field, label in fields.items():
-        median, iqr = calculate_stats(weather_data, field)
+        median, iqr, prob = calculate_stats(weather_data, field)
         if median is not None:
-            print(f"{label:<33} | {median:>10.1f} | {iqr:>10.1f}")
+            print(f"{label:<33} | {median:>10.1f} | {iqr:>10.1f} | {prob:>10.0%}")
         else:
-            print(f"{label:<33} | {'N/A':>10} | {'N/A':>10}")
+            print(f"{label:<33} | {'N/A':>10} | {'N/A':>10} | {'N/A':>10}")
 
 
 if __name__ == "__main__":
