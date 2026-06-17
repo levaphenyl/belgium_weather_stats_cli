@@ -105,7 +105,7 @@ def fetch_weather_data(station_code: int, month: int, day: int) -> Dict[str, Any
             "service": "WFS",
             "version": "2.0.0",
             "request": "GetFeature",
-            "typeName": "aws:aws_1hour",
+            "typeName": "aws:aws_1day",
             "outputFormat": "application/json",
             "CQL_FILTER": cql_filter
         }
@@ -189,7 +189,7 @@ def main():
     logger.info(f"Nearest station: {station['name']} (Code: {station['code']}) at {distance:.2f} km")
 
     # 3. Fetch data for all years
-    logger.info(f"Fetching data for month {month}, day {day} across all years (2003-{datetime.now().year})...")
+    logger.info(f"Fetching data for month {month}, day {day} across the past 10 years...")
     weather_data = fetch_weather_data(station['code'], month, day)
     if not weather_data["features"]:
         logger.error(f"No data found for station {station['name']} on {month:02d}-{day:02d}")
@@ -197,22 +197,23 @@ def main():
 
     # 4. Calculate and display stats
     fields = {
-        "temp_dry_shelter_avg": "Dry Shelter Temperature (°C)",
+        "temp_min": "Dry Shelter Min Temperature (°C)",
+        "temp_max": "Dry Shelter Max Temperature (°C)",
         "precip_quantity": "Precipitation Quantity (mm)",
         "sun_duration": "Sunshine Duration (min)"
     }
 
     print(f"\nStats for {month:02d}-{day:02d} (all years) at station {station['name']}:")
-    print("-" * 50)
-    print(f"{'Parameter':<30} | {'Median':<10} | {'IQR':<10}")
-    print("-" * 50)
+    print("-" * 60)
+    print(f"{'Parameter':<33} | {'Median':<10} | {'IQR':<10}")
+    print("-" * 60)
 
     for field, label in fields.items():
         median, iqr = calculate_stats(weather_data, field)
         if median is not None:
-            print(f"{label:<30} | {median:>10.2f} | {iqr:>10.2f}")
+            print(f"{label:<33} | {median:>10.1f} | {iqr:>10.1f}")
         else:
-            print(f"{label:<30} | {'N/A':>10} | {'N/A':>10}")
+            print(f"{label:<33} | {'N/A':>10} | {'N/A':>10}")
 
 
 if __name__ == "__main__":
