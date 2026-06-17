@@ -166,7 +166,7 @@ def main():
             dt = datetime.strptime(args.date, "%Y-%m-%d")
             month, day = dt.month, dt.day
         else:
-            month, day = [float(x) for x in date_split]
+            month, day = [int(x) for x in date_split]
     except ValueError:
         logger.error("Invalid date format. Please use YYYY-MM-DD or MM-DD.")
         sys.exit(1)
