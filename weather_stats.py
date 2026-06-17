@@ -68,9 +68,10 @@ def get_nearest_station(lat: float, lon: float) -> Tuple[Dict[str, Any], float]:
 
     return nearest_station, min_dist
 
+
 def fetch_weather_data(station_code: int, month: int, day: int) -> Dict[str, Any]:
     """
-    Fetch hourly weather data for a specific station, across all available years for a given month and day.
+    Fetch hourly weather data for a specific station, across the past ten years for a given month and day.
 
     Parameters
     ----------
@@ -94,7 +95,7 @@ def fetch_weather_data(station_code: int, month: int, day: int) -> Dict[str, Any
     all_features = []
     # Query year by year since month() and day() functions are not supported by the WFS
     current_year = datetime.now().year
-    for year in range(2003, current_year + 1):
+    for year in range(current_year - 10, current_year + 1):
         start_time = f"{year}-{month:02d}-{day:02d}T00:00:00Z"
         end_time = f"{year}-{month:02d}-{day:02d}T23:59:59Z"
 
@@ -122,6 +123,7 @@ def fetch_weather_data(station_code: int, month: int, day: int) -> Dict[str, Any
             continue
 
     return {"type": "FeatureCollection", "features": all_features}
+
 
 def calculate_stats(data: Dict[str, Any], field_name: str) -> Tuple[Optional[float], Optional[float]]:
     """
