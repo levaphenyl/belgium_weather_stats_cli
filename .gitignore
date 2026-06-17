@@ -5,3 +5,5 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
+Pipfile
+Pipfile.lock
