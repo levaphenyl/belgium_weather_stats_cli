@@ -9,11 +9,11 @@ import requests
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 WFS_URL = "https://opendata.meteo.be/geoserver/wfs"
+
 
 def get_nearest_station(lat: float, lon: float) -> Tuple[Dict[str, Any], float]:
     """
@@ -45,13 +45,8 @@ def get_nearest_station(lat: float, lon: float) -> Tuple[Dict[str, Any], float]:
         "typeName": "aws:aws_station",
         "outputFormat": "application/json"
     }
-    try:
-        response = requests.get(WFS_URL, params=params)
-        response.raise_for_status()
-    except requests.HTTPError as e:
-        logger.error(f"Failed to fetch stations from WFS: {e}")
-        sys.exit(1)
-
+    response = requests.get(WFS_URL, params=params)
+    response.raise_for_status()
     data = response.json()
 
     stations = data["features"]
@@ -161,9 +156,7 @@ def main():
     parser = argparse.ArgumentParser(description="Query historical hourly weather data from RMI Belgium.")
     parser.add_argument("date", help="Date in YYYY-MM-DD or MM-DD format (year is ignored for stats)")
     parser.add_argument("place", help="Place name")
-
     args = parser.parse_args()
-
     # Parse month and day from input date
     try:
         if len(args.date.split('-')) == 3:
@@ -185,17 +178,20 @@ def main():
     logger.info(f"Location found: {location.address} ({location.latitude}, {location.longitude})")
 
     # 2. Find nearest station
-    station, distance = get_nearest_station(location.latitude, location.longitude)
+    try:
+        station, distance = get_nearest_station(location.latitude, location.longitude)
+    except requests.HTTPError as err:
+        logger.error(f"Failed to fetch stations from WFS: {err}")
+        sys.exit(1)
 
     logger.info(f"Nearest station: {station['name']} (Code: {station['code']}) at {distance:.2f} km")
 
     # 3. Fetch data for all years
     logger.info(f"Fetching data for month {month}, day {day} across all years (2003-{datetime.now().year})...")
     weather_data = fetch_weather_data(station['code'], month, day)
-
     if not weather_data["features"]:
         logger.error(f"No data found for station {station['name']} on {month:02d}-{day:02d}")
-        return
+        sys.exit(1)
 
     # 4. Calculate and display stats
     fields = {
@@ -215,6 +211,7 @@ def main():
             print(f"{label:<30} | {median:>10.2f} | {iqr:>10.2f}")
         else:
             print(f"{label:<30} | {'N/A':>10} | {'N/A':>10}")
+
 
 if __name__ == "__main__":
     main()
